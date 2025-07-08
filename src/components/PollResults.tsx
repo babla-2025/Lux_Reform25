@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 interface PollOption {
   id: string
@@ -17,66 +17,75 @@ export function PollResults() {
   ])
 
   const [userVote, setUserVote] = useState<string | null>(null)
-  const [totalVotes, setTotalVotes] = useState(0)
-  const [lastUpdate, setLastUpdate] = useState(new Date())
+  const [isClient, setIsClient] = useState(false)
 
+  // Calculate total votes whenever pollData changes
+  const totalVotes = pollData.reduce((sum, option) => sum + option.votes, 0)
+
+  // Handle client-side mounting
   useEffect(() => {
-    // Calculate total votes
-    const total = pollData.reduce((sum, option) => sum + option.votes, 0)
-    setTotalVotes(total)
-  }, [pollData])
-
-  useEffect(() => {
-    // Only update the "last update" timestamp every 30 seconds for display purposes
-    // No longer generating fake votes
-    const interval = setInterval(() => {
-      setLastUpdate(new Date())
-    }, 30000) // 30 seconds
-
-    return () => clearInterval(interval)
+    setIsClient(true)
+    // Check if user has already voted
+    const existingVote = localStorage.getItem('tax-poll-vote')
+    if (existingVote) {
+      setUserVote(existingVote)
+    }
   }, [])
 
-  const handleVote = async (optionId: string) => {
-    if (userVote) return // Already voted
+  const handleVote = useCallback(async (optionId: string) => {
+    if (userVote) {
+      console.log('User has already voted')
+      return // Already voted
+    }
 
     try {
-      // In a real app, this would be an API call
-      // await fetch('/api/poll-vote', { 
-      //   method: 'POST', 
-      //   body: JSON.stringify({ optionId }) 
-      // })
-
-      // Update local state - only when user actually votes
-      setPollData(prevData =>
-        prevData.map(option =>
+      console.log('Processing vote for:', optionId)
+      
+      // Update poll data immediately
+      setPollData(prevData => {
+        const newData = prevData.map(option =>
           option.id === optionId
             ? { ...option, votes: option.votes + 1 }
             : option
         )
-      )
-      setUserVote(optionId)
-
-      // Store vote in localStorage to prevent multiple votes
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('tax-poll-vote', optionId)
-      }
+        console.log('Updated poll data:', newData)
+        return newData
+      })
       
-      // Update timestamp when vote is cast
-      setLastUpdate(new Date())
+      // Set user vote
+      setUserVote(optionId)
+      console.log('Set user vote to:', optionId)
+
+      // Store vote in localStorage
+      if (isClient) {
+        localStorage.setItem('tax-poll-vote', optionId)
+        console.log('Saved vote to localStorage')
+      }
+
     } catch (error) {
       console.error('Error voting:', error)
     }
-  }
+  }, [userVote, isClient])
 
-  useEffect(() => {
-    // Check if user has already voted
-    if (typeof window !== 'undefined') {
-      const existingVote = localStorage.getItem('tax-poll-vote')
-      if (existingVote) {
-        setUserVote(existingVote)
-      }
-    }
-  }, [])
+  // Don't render until client-side
+  if (!isClient) {
+    return (
+      <div className="space-y-6">
+        <p className="text-lg font-medium text-center">
+          What should be the top priority in tax reform?
+        </p>
+        <div className="space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="w-full p-4 rounded-lg border-2 border-gray-200 bg-gray-50 animate-pulse">
+              <div className="h-4 bg-gray-300 rounded mb-2"></div>
+              <div className="h-2 bg-gray-300 rounded mb-1"></div>
+              <div className="h-3 bg-gray-300 rounded w-1/3"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
