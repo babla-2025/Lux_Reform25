@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "EXPORT_MODE=static next build",
+    "deploy:github": "GITHUB_PAGES=true npm run export",
+    "deploy:vercel": "vercel --prod"
   },
   "dependencies": {
     "@types/node": "^20.17.6",
