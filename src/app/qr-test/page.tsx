@@ -1,11 +1,40 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { Metadata } from 'next'
 
-export const metadata: Metadata = {
-  title: 'QR Code Test - Luxembourg Tax Simulator',
-  description: 'Test page to verify QR code functionality',
-}
+// Note: metadata needs to be exported from a server component, but we need client functionality
+// So we'll handle the dynamic links in the client component
 
 export default function QRTestPage() {
+  const [basePath, setBasePath] = useState('')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Check if we're on GitHub Pages and set the correct base path
+      const isGitHubPages = window.location.host.includes('github.io')
+      const path = isGitHubPages ? '/tax_Luxembourg' : ''
+      setBasePath(path)
+    }
+    setMounted(true)
+  }, [])
+
+  // Don't render until mounted to avoid hydration issues
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+          <div className="animate-pulse">
+            <div className="w-16 h-16 bg-gray-300 rounded-full mx-auto mb-4"></div>
+            <div className="h-6 bg-gray-300 rounded mb-2 mx-8"></div>
+            <div className="h-4 bg-gray-300 rounded mb-6 mx-4"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
@@ -30,14 +59,14 @@ export default function QRTestPage() {
 
         <div className="space-y-3">
           <a 
-            href="/tax-simulator" 
+            href={`${basePath}/tax-simulator`}
             className="block w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
             Start Tax Simulation
           </a>
           
           <a 
-            href="/" 
+            href={`${basePath}/`}
             className="block w-full bg-gray-200 text-gray-800 py-3 px-6 rounded-lg font-medium hover:bg-gray-300 transition-colors"
           >
             Back to Home
