@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "export": "EXPORT_MODE=static next build",
-    "deploy:github": "GITHUB_PAGES=true npm run export",
+    "build:github": "GITHUB_PAGES=true EXPORT_MODE=static next build",
     "deploy:vercel": "vercel --prod"
   },
   "dependencies": {
