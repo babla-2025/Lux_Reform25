@@ -7,6 +7,7 @@ const nextConfig = {
     domains: ['localhost'],
     unoptimized: true, // Required for static export
   },
+  
   // Environment-based output configuration
   output: process.env.EXPORT_MODE === 'static' ? 'export' : 'standalone',
   
@@ -18,6 +19,14 @@ const nextConfig = {
   
   // Disable server-side features for static export
   trailingSlash: true,
+  
+  // Disable static generation for dynamic pages
+  generateBuildId: () => 'build',
+  
+  // Configure pages that should not be prerendered
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
   
   // Webpack configuration for better build performance
   webpack: (config, { isServer }) => {

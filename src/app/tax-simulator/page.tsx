@@ -1,12 +1,25 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { TaxCalculator } from '@/components/TaxCalculator'
 import { BehavioralResponseChart } from '@/components/BehavioralResponseChart'
 import Link from 'next/link'
 
-export default function TaxSimulator() {
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
+// Loading component for Suspense fallback
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  )
+}
+
+// Component that uses useSearchParams - must be wrapped in Suspense
+function TaxSimulatorContent() {
   const searchParams = useSearchParams()
   const [mounted, setMounted] = useState(false)
   
@@ -20,11 +33,7 @@ export default function TaxSimulator() {
   }, [])
 
   if (!mounted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   return (
@@ -127,5 +136,14 @@ export default function TaxSimulator() {
         </section>
       </main>
     </div>
+  )
+}
+
+// Main component with Suspense wrapper
+export default function TaxSimulator() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <TaxSimulatorContent />
+    </Suspense>
   )
 }
