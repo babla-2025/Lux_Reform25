@@ -10,7 +10,14 @@ export function QRCodeDisplay() {
   useEffect(() => {
     // Set the base URL after component mounts to avoid SSR issues
     if (typeof window !== 'undefined') {
-      const currentUrl = `${window.location.protocol}//${window.location.host}`
+      const protocol = window.location.protocol
+      const host = window.location.host
+      
+      // Check if we're on GitHub Pages and add the base path
+      const isGitHubPages = host.includes('github.io')
+      const basePath = isGitHubPages ? '/tax_Luxembourg' : ''
+      
+      const currentUrl = `${protocol}//${host}${basePath}`
       setBaseUrl(currentUrl)
     }
     setMounted(true)
