@@ -10,32 +10,31 @@ interface PollOption {
 
 export function PollResults() {
   const [pollData, setPollData] = useState<PollOption[]>([
-    { id: 'fairness', text: 'Fairness across households', votes: 45 },
-    { id: 'women-incentives', text: 'Incentives for working women', votes: 32 },
-    { id: 'budget-neutral', text: 'Budget neutrality', votes: 28 },
-    { id: 'simplification', text: 'Simplification of the tax code', votes: 18 },
+    { id: 'fairness', text: 'Fairness across households', votes: 77 },
+    { id: 'women-incentives', text: 'Incentives for working women', votes: 68 },
+    { id: 'budget-neutral', text: 'Budget neutrality', votes: 70 },
+    { id: 'simplification', text: 'Simplification of the tax code', votes: 57 },
   ])
 
   const [userVote, setUserVote] = useState<string | null>(null)
   const [totalVotes, setTotalVotes] = useState(0)
+  const [lastUpdate, setLastUpdate] = useState(new Date())
 
   useEffect(() => {
     // Calculate total votes
     const total = pollData.reduce((sum, option) => sum + option.votes, 0)
     setTotalVotes(total)
+  }, [pollData])
 
-    // Simulate real-time updates every 30 seconds
+  useEffect(() => {
+    // Only update the "last update" timestamp every 30 seconds for display purposes
+    // No longer generating fake votes
     const interval = setInterval(() => {
-      setPollData(prevData => 
-        prevData.map(option => ({
-          ...option,
-          votes: option.votes + Math.floor(Math.random() * 3) // Add 0-2 random votes
-        }))
-      )
+      setLastUpdate(new Date())
     }, 30000) // 30 seconds
 
     return () => clearInterval(interval)
-  }, [pollData])
+  }, [])
 
   const handleVote = async (optionId: string) => {
     if (userVote) return // Already voted
@@ -47,7 +46,7 @@ export function PollResults() {
       //   body: JSON.stringify({ optionId }) 
       // })
 
-      // Update local state
+      // Update local state - only when user actually votes
       setPollData(prevData =>
         prevData.map(option =>
           option.id === optionId
@@ -58,7 +57,12 @@ export function PollResults() {
       setUserVote(optionId)
 
       // Store vote in localStorage to prevent multiple votes
-      localStorage.setItem('tax-poll-vote', optionId)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('tax-poll-vote', optionId)
+      }
+      
+      // Update timestamp when vote is cast
+      setLastUpdate(new Date())
     } catch (error) {
       console.error('Error voting:', error)
     }
@@ -66,9 +70,11 @@ export function PollResults() {
 
   useEffect(() => {
     // Check if user has already voted
-    const existingVote = localStorage.getItem('tax-poll-vote')
-    if (existingVote) {
-      setUserVote(existingVote)
+    if (typeof window !== 'undefined') {
+      const existingVote = localStorage.getItem('tax-poll-vote')
+      if (existingVote) {
+        setUserVote(existingVote)
+      }
     }
   }, [])
 
@@ -129,7 +135,7 @@ export function PollResults() {
 
       <div className="text-center text-sm text-gray-600">
         <p>Total votes: {totalVotes}</p>
-        <p className="mt-1">Results update every 30 seconds</p>
+        <p className="mt-1">Live polling system</p>
         {userVote && (
           <p className="mt-2 text-green-600 font-medium">
             Thank you for voting! 🗳️
