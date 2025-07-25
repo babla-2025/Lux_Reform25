@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "luxembourg-tax-simulator",
   "builds": [
     {
       "src": "package.json",
@@ -12,13 +11,5 @@
       "src": "/(.*)",
       "dest": "/"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "functions": {
-    "src/app/**/*.ts": {
-      "maxDuration": 10
-    }
-  }
+  ]
 }
